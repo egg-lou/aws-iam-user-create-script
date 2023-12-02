@@ -14,7 +14,7 @@ region_name = os.getenv('AWS_REGION')
 iam_client = boto3.client('iam', aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key, region_name=region_name)
 ses_client = boto3.client('ses', aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key, region_name=region_name)
 
-csv_file = 'dcc.csv'
+csv_file = 'dcc_core.csv'
 credentials = 'dcc_creds.csv'
 
 user_group = os.getenv('IAM_USER_GROUP')
@@ -46,6 +46,8 @@ console_access_policy = {
         }
     ]
 }
+
+error_occurred = False
 
 with open(csv_file, 'r') as file:
     csv_reader = csv.reader(file)
@@ -104,16 +106,13 @@ with open(csv_file, 'r') as file:
 
             except ClientError as e:
                 print(f"Error sending email to {recipient_email}: {e}")
+                error_occurred = True
 
         except ClientError as e:
             print(f"Error creating IAM user '{username}': {e}")
+            error_occurred = True
 
-with open(credentials, 'w', newline='') as output_csv_file:
-    fieldnames = ['Name', 'Email', 'Password', 'Group', 'SignInURL']
-    writer = csv.DictWriter(output_csv_file, fieldnames=fieldnames)
-
-    writer.writeheader()
-
-    writer.writerows(created_users)
-
-    print(f"User details saved to {credentials}.")
+if not error_occurred:
+    print("User creation and email sending completed successfully.")
+else:
+    print("There were errors during user creation or email sending.")
