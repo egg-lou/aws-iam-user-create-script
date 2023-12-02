@@ -58,7 +58,7 @@ with open(csv_file, 'r') as file:
 
         username = full_name.replace(' ', '.')
 
-        custom_password = '@dcc2324'
+        custom_password = os.getenv('CUSTOM_PASSWORD')
 
         try:
             response = iam_client.create_user(UserName=username)
